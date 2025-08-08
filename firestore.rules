@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can only read/write their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Users can read/write accounts they are members of
+    match /accounts/{accountId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid in resource.data.members;
+      
+      // Allow create if the user is the creator
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.createdBy;
+        
+      // Deposits subcollection
+      match /deposits/{depositId} {
+        // Users can read deposits for accounts they are members of
+        allow read: if request.auth != null && 
+          request.auth.uid in get(/databases/$(database)/documents/accounts/$(accountId)).data.members;
+        
+        // Users can create deposits for accounts they are members of
+        allow create: if request.auth != null && 
+          request.auth.uid in get(/databases/$(database)/documents/accounts/$(accountId)).data.members &&
+          request.auth.uid == request.resource.data.userId;
+        
+        // Only account admins can update deposit status
+        allow update: if request.auth != null && 
+          request.auth.uid == get(/databases/$(database)/documents/accounts/$(accountId)).data.createdBy &&
+          // Only allow updating status, approvedBy, and approvedAt fields
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'approvedBy', 'approvedAt']);
+      }
+    }
+  }
+}
