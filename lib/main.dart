@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'screens/auth/auth_gate.dart';
+import 'screens/invites/invite_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +21,7 @@ class MoneyTrackerApp extends StatelessWidget {
     return MaterialApp(
       title: 'Money Tracker',
       theme: AppTheme.lightTheme,
-      home: const AuthGate(),
+      home: InviteHandler(child: const AuthGate()),
       debugShowCheckedModeBanner: false,
     );
   }

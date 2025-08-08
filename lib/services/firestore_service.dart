@@ -20,6 +20,7 @@ class FirestoreService {
         'goalAmount': goalAmount,
         'createdBy': createdBy,
         'members': [createdBy],
+        'memberColors': { createdBy: 0 },
         'createdAt': DateTime.now(),
       });
 
@@ -59,17 +60,44 @@ class FirestoreService {
   }
 
   // Add member to account
-  Future<void> addMemberToAccount(String accountId, String userId) async {
+  Future<void> addMemberToAccount(String accountId, String userId, {bool assignColor = false}) async {
     try {
-      await _firestore.collection('accounts').doc(accountId).update({
+      final accountRef = _firestore.collection('accounts').doc(accountId);
+      await accountRef.update({
         'members': FieldValue.arrayUnion([userId])
       });
+
+      // Optionally assign a color index for the member in this account
+      if (assignColor) {
+        final snap = await accountRef.get();
+        final data = snap.data() as Map<String, dynamic>?;
+        final existing = Map<String, dynamic>.from(data?['memberColors'] ?? {});
+        // next color index from 0..7
+        final nextIndex = (existing.length % 8);
+        existing[userId] = nextIndex;
+        await accountRef.update({'memberColors': existing});
+      }
 
       await _firestore.collection('users').doc(userId).update({
         'joinedAccounts': FieldValue.arrayUnion([accountId])
       });
     } catch (e) {
       throw 'Error adding member to account: $e';
+    }
+  }
+
+  Future<void> removeMemberFromAccount(String accountId, String userId) async {
+    try {
+      final accountRef = _firestore.collection('accounts').doc(accountId);
+      await accountRef.update({
+        'members': FieldValue.arrayRemove([userId])
+      });
+      await _firestore.collection('users').doc(userId).update({
+        'joinedAccounts': FieldValue.arrayRemove([accountId])
+      });
+      // keep memberColors entry to preserve legend history, or remove if desired
+    } catch (e) {
+      throw 'Error removing member: $e';
     }
   }
 

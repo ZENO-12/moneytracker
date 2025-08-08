@@ -10,6 +10,7 @@ import '../accounts/create_account_screen.dart';
 import '../deposits/deposit_screen.dart';
 import '../admin/admin_panel_screen.dart';
 import '../profile/profile_screen.dart';
+import '../admin/admin_gate.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -42,6 +43,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               );
             },
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'super_admin') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AdminGate()),
+                );
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'super_admin', child: Text('Super Admin Console')),
+            ],
           ),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -306,7 +320,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     return PieChartSectionData(
                       value: entry.value,
                       title: '${percentage.toStringAsFixed(1)}%',
-                      color: _getColorForUser(entry.key),
+                      color: _getColorForUser(entry.key, account: account),
                       radius: 60,
                     );
                   }).toList(),
@@ -323,7 +337,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     width: 12,
                     height: 12,
                     decoration: BoxDecoration(
-                      color: _getColorForUser(entry.key),
+                      color: _getColorForUser(entry.key, account: account),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -438,14 +452,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Color _getColorForUser(String userId) {
-    final colors = [
+  Color _getColorForUser(String userId, {AccountModel? account}) {
+    final palette = [
       AppTheme.primary,
+      AppTheme.grey800,
       AppTheme.grey600,
       AppTheme.grey400,
-      AppTheme.grey800,
+      const Color(0xFF000000),
+      const Color(0xFF1E1E1E),
+      const Color(0xFF5A5A5A),
+      const Color(0xFF9A9A9A),
     ];
-    return colors[userId.hashCode % colors.length];
+    if (account != null && account.memberColors.containsKey(userId)) {
+      final idx = account.memberColors[userId]!.clamp(0, palette.length - 1);
+      return palette[idx];
+    }
+    return palette[userId.hashCode % palette.length];
   }
 
   Color _getStatusColor(DepositStatus status) {

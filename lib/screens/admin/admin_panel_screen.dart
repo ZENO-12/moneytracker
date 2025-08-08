@@ -69,7 +69,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Panel'),
+        title: const Text('Admin Panel'), actions: [ IconButton(icon: const Icon(Icons.group_add_outlined), onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (_) => ManageMembersScreen(account: widget.account))); },) ],
         centerTitle: true,
       ),
       body: Column(

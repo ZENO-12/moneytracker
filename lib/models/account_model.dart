@@ -3,7 +3,8 @@ class AccountModel {
   final String name;
   final double goalAmount;
   final String createdBy;
-  final List<String> members;
+  final List<String> members; // userIds
+  final Map<String, int> memberColors; // userId -> color index
   final DateTime createdAt;
 
   AccountModel({
@@ -12,6 +13,7 @@ class AccountModel {
     required this.goalAmount,
     required this.createdBy,
     required this.members,
+    required this.memberColors,
     required this.createdAt,
   });
 
@@ -22,6 +24,7 @@ class AccountModel {
       goalAmount: (map['goalAmount'] ?? 0).toDouble(),
       createdBy: map['createdBy'] ?? '',
       members: List<String>.from(map['members'] ?? []),
+      memberColors: Map<String, int>.from(map['memberColors'] ?? {}),
       createdAt: map['createdAt']?.toDate() ?? DateTime.now(),
     );
   }
@@ -32,6 +35,7 @@ class AccountModel {
       'goalAmount': goalAmount,
       'createdBy': createdBy,
       'members': members,
+      'memberColors': memberColors,
       'createdAt': createdAt,
     };
   }
@@ -42,6 +46,7 @@ class AccountModel {
     double? goalAmount,
     String? createdBy,
     List<String>? members,
+    Map<String, int>? memberColors,
     DateTime? createdAt,
   }) {
     return AccountModel(
@@ -50,6 +55,7 @@ class AccountModel {
       goalAmount: goalAmount ?? this.goalAmount,
       createdBy: createdBy ?? this.createdBy,
       members: members ?? this.members,
+      memberColors: memberColors ?? this.memberColors,
       createdAt: createdAt ?? this.createdAt,
     );
   }
