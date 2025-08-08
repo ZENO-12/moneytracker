@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "289046200539",
+    "firebase_url": "https://moneytracker-5fedb-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "moneytracker-5fedb",
+    "storage_bucket": "moneytracker-5fedb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:289046200539:android:ca08258457ad70ed4b4cfe",
+        "android_client_info": {
+          "package_name": "com.example.money_tracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChDfIAV76LnyGcNQ-ho_T-DKj3sSvUM_4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
