@@ -19,7 +19,8 @@ class FirestoreService {
         'name': name,
         'goalAmount': goalAmount,
         'createdBy': createdBy,
-        'members': [createdBy],
+        'members': [ { 'userId': createdBy, 'role': 'admin' } ],
+        'memberIds': [ createdBy ],
         'memberColors': { createdBy: 0 },
         'createdAt': DateTime.now(),
       });
@@ -39,7 +40,7 @@ class FirestoreService {
   Stream<List<AccountModel>> getUserAccounts(String userId) {
     return _firestore
         .collection('accounts')
-        .where('members', arrayContains: userId)
+        .where('memberIds', arrayContains: userId)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => AccountModel.fromMap(doc.data(), doc.id))
@@ -60,19 +61,18 @@ class FirestoreService {
   }
 
   // Add member to account
-  Future<void> addMemberToAccount(String accountId, String userId, {bool assignColor = false}) async {
+  Future<void> addMemberToAccount(String accountId, String userId, {bool assignColor = false, String role = 'member'}) async {
     try {
       final accountRef = _firestore.collection('accounts').doc(accountId);
       await accountRef.update({
-        'members': FieldValue.arrayUnion([userId])
+        'members': FieldValue.arrayUnion([{ 'userId': userId, 'role': role }]),
+        'memberIds': FieldValue.arrayUnion([userId]),
       });
 
-      // Optionally assign a color index for the member in this account
       if (assignColor) {
         final snap = await accountRef.get();
         final data = snap.data() as Map<String, dynamic>?;
         final existing = Map<String, dynamic>.from(data?['memberColors'] ?? {});
-        // next color index from 0..7
         final nextIndex = (existing.length % 8);
         existing[userId] = nextIndex;
         await accountRef.update({'memberColors': existing});
@@ -89,13 +89,17 @@ class FirestoreService {
   Future<void> removeMemberFromAccount(String accountId, String userId) async {
     try {
       final accountRef = _firestore.collection('accounts').doc(accountId);
+      final snap = await accountRef.get();
+      final data = snap.data() as Map<String, dynamic>;
+      final members = List<Map<String, dynamic>>.from(data['members'] ?? []);
+      final updated = members.where((m) => m['userId'] != userId).toList();
       await accountRef.update({
-        'members': FieldValue.arrayRemove([userId])
+        'members': updated,
+        'memberIds': FieldValue.arrayRemove([userId])
       });
       await _firestore.collection('users').doc(userId).update({
         'joinedAccounts': FieldValue.arrayRemove([accountId])
       });
-      // keep memberColors entry to preserve legend history, or remove if desired
     } catch (e) {
       throw 'Error removing member: $e';
     }
@@ -110,6 +114,7 @@ class FirestoreService {
     required double amount,
     required DateTime date,
     required DepositMethod method,
+    String? notes,
   }) async {
     try {
       DocumentReference depositRef = await _firestore
@@ -124,6 +129,7 @@ class FirestoreService {
         'method': method.name,
         'status': DepositStatus.pending.name,
         'createdAt': DateTime.now(),
+        'notes': notes, 
       });
 
       return depositRef.id;

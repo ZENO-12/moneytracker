@@ -11,6 +11,7 @@ class DepositModel {
   final DepositMethod method;
   final DepositStatus status;
   final DateTime createdAt;
+  final String? notes;
   final String? approvedBy;
   final DateTime? approvedAt;
 
@@ -23,6 +24,7 @@ class DepositModel {
     required this.method,
     this.status = DepositStatus.pending,
     required this.createdAt,
+    this.notes,
     this.approvedBy,
     this.approvedAt,
   });
@@ -43,6 +45,7 @@ class DepositModel {
         orElse: () => DepositStatus.pending,
       ),
       createdAt: map['createdAt']?.toDate() ?? DateTime.now(),
+      notes: map['notes'],
       approvedBy: map['approvedBy'],
       approvedAt: map['approvedAt']?.toDate(),
     );
@@ -57,6 +60,7 @@ class DepositModel {
       'method': method.name,
       'status': status.name,
       'createdAt': createdAt,
+      'notes': notes,
       'approvedBy': approvedBy,
       'approvedAt': approvedAt,
     };

@@ -4,7 +4,7 @@ class InviteModel {
   final String token; // document id
   final String accountId;
   final String invitedEmail;
-  final String invitedBy; // userId
+  final String invitedByUserId; // userId
   final InviteStatus status;
   final DateTime createdAt;
   final String? acceptedBy; // userId
@@ -26,7 +26,7 @@ class InviteModel {
       token: token,
       accountId: map['accountId'] ?? '',
       invitedEmail: map['invitedEmail'] ?? '',
-      invitedBy: map['invitedBy'] ?? '',
+      invitedByUserId: map['invitedByUserId'] ?? '',
       status: InviteStatus.values.firstWhere(
         (e) => e.name == map['status'],
         orElse: () => InviteStatus.pending,
@@ -41,7 +41,7 @@ class InviteModel {
     return {
       'accountId': accountId,
       'invitedEmail': invitedEmail,
-      'invitedBy': invitedBy,
+      'invitedByUserId': invitedByUserId,
       'status': status.name,
       'createdAt': createdAt,
       'acceptedBy': acceptedBy,

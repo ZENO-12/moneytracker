@@ -11,6 +11,8 @@ class InviteService {
   final AuthService _authService = AuthService();
   final FirestoreService _firestoreService = FirestoreService();
 
+  static const invitationsCollection = 'invitations';
+
   // token generator
   String _generateToken(int length) {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -47,13 +49,13 @@ class InviteService {
     }
 
     final token = _generateToken(20);
-    final inviteDoc = _firestore.collection('invites').doc(token);
+    final inviteDoc = _firestore.collection(invitationsCollection).doc(token);
 
     final invite = InviteModel(
       token: token,
       accountId: accountId,
       invitedEmail: invitedEmail.trim().toLowerCase(),
-      invitedBy: currentUser.uid,
+      invitedByUserId: currentUser.uid,
       status: InviteStatus.pending,
       createdAt: DateTime.now(),
     );
@@ -75,13 +77,13 @@ class InviteService {
   }
 
   Future<void> cancelInvite(String token) async {
-    await _firestore.collection('invites').doc(token).update({
+    await _firestore.collection(invitationsCollection).doc(token).update({
       'status': InviteStatus.canceled.name,
     });
   }
 
   Future<InviteModel?> getInvite(String token) async {
-    final doc = await _firestore.collection('invites').doc(token).get();
+    final doc = await _firestore.collection(invitationsCollection).doc(token).get();
     if (!doc.exists) return null;
     return InviteModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
   }
@@ -103,7 +105,7 @@ class InviteService {
     // Add member to account and assign color
     await _firestoreService.addMemberToAccount(invite.accountId, currentUser.uid, assignColor: true);
 
-    await _firestore.collection('invites').doc(token).update({
+    await _firestore.collection(invitationsCollection).doc(token).update({
       'status': InviteStatus.accepted.name,
       'acceptedBy': currentUser.uid,
       'acceptedAt': DateTime.now(),

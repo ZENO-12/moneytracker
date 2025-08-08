@@ -1,9 +1,17 @@
+class AccountMember {
+  final String userId;
+  final String role; // 'admin' | 'member'
+  AccountMember({required this.userId, required this.role});
+  factory AccountMember.fromMap(Map<String, dynamic> map) => AccountMember(userId: map['userId'] ?? '', role: map['role'] ?? 'member');
+  Map<String, dynamic> toMap() => { 'userId': userId, 'role': role };
+}
+
 class AccountModel {
   final String id;
   final String name;
   final double goalAmount;
   final String createdBy;
-  final List<String> members; // userIds
+  final List<AccountMember> members; // role-aware members
   final Map<String, int> memberColors; // userId -> color index
   final DateTime createdAt;
 
@@ -23,7 +31,7 @@ class AccountModel {
       name: map['name'] ?? '',
       goalAmount: (map['goalAmount'] ?? 0).toDouble(),
       createdBy: map['createdBy'] ?? '',
-      members: List<String>.from(map['members'] ?? []),
+      members: (map['members'] as List<dynamic>? ?? []).map((m) => AccountMember.fromMap(Map<String, dynamic>.from(m))).toList(),
       memberColors: Map<String, int>.from(map['memberColors'] ?? {}),
       createdAt: map['createdAt']?.toDate() ?? DateTime.now(),
     );
@@ -34,7 +42,7 @@ class AccountModel {
       'name': name,
       'goalAmount': goalAmount,
       'createdBy': createdBy,
-      'members': members,
+      'members': members.map((m) => m.toMap()).toList(),
       'memberColors': memberColors,
       'createdAt': createdAt,
     };
@@ -45,7 +53,7 @@ class AccountModel {
     String? name,
     double? goalAmount,
     String? createdBy,
-    List<String>? members,
+    List<AccountMember>? members,
     Map<String, int>? memberColors,
     DateTime? createdAt,
   }) {

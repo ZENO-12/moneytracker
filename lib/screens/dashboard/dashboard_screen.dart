@@ -10,6 +10,7 @@ import '../accounts/create_account_screen.dart';
 import '../deposits/deposit_screen.dart';
 import '../admin/admin_panel_screen.dart';
 import '../profile/profile_screen.dart';
+import '../invites/invites_inbox_screen.dart';
 import '../admin/admin_gate.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -34,6 +35,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
         title: const Text('Money Tracker'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.mail_outline),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const InvitesInboxScreen(),
+                ),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
               Navigator.push(
@@ -44,19 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               );
             },
           ),
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'super_admin') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AdminGate()),
-                );
-              }
-            },
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 'super_admin', child: Text('Super Admin Console')),
-            ],
-          ),
+
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
