@@ -27,17 +27,15 @@ class AuthService {
 
       User? user = result.user;
       if (user != null) {
-        // Create user document in Firestore
-        UserModel newUser = UserModel(
-          uid: user.uid,
-          email: email,
-          username: username,
-          anonymous: anonymous,
-          joinedAccounts: [],
-          createdAt: DateTime.now(),
-        );
-
-        await _firestore.collection('users').doc(user.uid).set(newUser.toMap());
+        // Create user document in Firestore (new schema)
+        await _firestore.collection('users').doc(user.uid).set({
+          'uid': user.uid,
+          'email': email,
+          'name': username ?? email.split('@')[0],
+          'role': 'user',
+          'createdAccounts': [],
+          'createdAt': DateTime.now(),
+        });
         return newUser;
       }
       return null;

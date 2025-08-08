@@ -1,58 +1,48 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can only read/write their own user document
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Super admin detection helper
+    function isAuthenticated() { return request.auth != null; }
+    function isUser(userId) { return isAuthenticated() && request.auth.uid == userId; }
     function isSuperAdmin() {
-      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.superAdmin == true;
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
     }
-    
-    // Accounts
-    match /accounts/{accountId} {
-      function isMember() {
-        return request.auth != null && request.auth.uid in resource.data.members;
-      }
-      function isAdmin() {
-        return request.auth != null && request.auth.uid == resource.data.createdBy;
-      }
 
-      // Read for members; super admins can read metadata too
-      allow read: if isMember() || isSuperAdmin();
+    // Users: self or super admin
+    match /users/{userId} {
+      allow read, write: if isUser(userId) || isSuperAdmin();
+    }
 
-      // Create by creator (becomes admin)
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.createdBy;
+    // App settings: only super admin
+    match /appSettings/adminControls {
+      allow read, write: if isSuperAdmin();
+    }
 
-      // Update only by admin or super admin (but no direct deposit data here)
-      allow update: if isAdmin() || isSuperAdmin();
+    // Savings accounts
+    match /savingsAccounts/{accountId} {
+      function isOwner() { return isAuthenticated() && resource.data.owner == request.auth.uid; }
+      function isMember() { return isAuthenticated() && request.auth.uid in resource.data.members; }
 
-      // Members management fields limitation (optional enforcement)
-      // Could restrict keys if needed
-
-      // Deposits subcollection
-      match /deposits/{depositId} {
-        allow read: if isMember(); // do NOT allow super admin to read deposit amounts
-
-        allow create: if isMember() && request.auth.uid == request.resource.data.userId;
-
-        // Only account admins can update limited status fields
-        allow update: if isAdmin() &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'approvedBy', 'approvedAt']);
-      }
+      allow read: if isSuperAdmin() || isOwner() || isMember();
+      allow create: if isAuthenticated() && request.resource.data.owner == request.auth.uid;
+      allow update, delete: if isSuperAdmin() || isOwner();
     }
 
     // Invites
-    match /invites/{token} {
-      allow create: if request.auth != null; // created by any authenticated user (ideally account admin validated in backend)
-      allow read: if request.auth != null && (
-        resource.data.invitedEmail == request.auth.token.email || // invited user checking
-        isSuperAdmin()
+    match /invites/{inviteId} {
+      allow create: if isAuthenticated();
+      allow read: if isSuperAdmin() || (
+        isAuthenticated() && (
+          get(/databases/$(database)/documents/savingsAccounts/$(resource.data.accountId)).data.owner == request.auth.uid
+          || request.auth.token.email == resource.data.sentToEmail
+        )
       );
-      allow update: if request.auth != null; // accepting/canceling handled by client-side checks
+      allow update, delete: if isSuperAdmin() || (
+        isAuthenticated() && (
+          request.auth.token.email == resource.data.sentToEmail ||
+          get(/databases/$(database)/documents/savingsAccounts/$(resource.data.accountId)).data.owner == request.auth.uid
+        )
+      );
     }
   }
 }

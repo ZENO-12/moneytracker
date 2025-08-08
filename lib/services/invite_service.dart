@@ -54,10 +54,10 @@ class InviteService {
     final invite = InviteModel(
       token: token,
       accountId: accountId,
-      invitedEmail: invitedEmail.trim().toLowerCase(),
-      invitedByUserId: currentUser.uid,
+      sentBy: currentUser.uid,
+      sentToEmail: invitedEmail.trim().toLowerCase(),
       status: InviteStatus.pending,
-      createdAt: DateTime.now(),
+      sentAt: DateTime.now(),
     );
 
     await inviteDoc.set(invite.toMap());
@@ -98,7 +98,7 @@ class InviteService {
 
     // Ensure email matches
     final email = currentUser.email?.toLowerCase();
-    if (email == null || email != invite.invitedEmail) {
+    if (email == null || email != invite.sentToEmail) {
       throw 'Invite email does not match your account';
     }
 

@@ -1,12 +1,12 @@
 enum InviteStatus { pending, accepted, canceled, revoked, expired }
 
 class InviteModel {
-  final String token; // document id
+  final String token; // inviteId
   final String accountId;
-  final String invitedEmail;
-  final String invitedByUserId; // userId
-  final InviteStatus status;
-  final DateTime createdAt;
+  final String sentBy; // userId
+  final String sentToEmail;
+  final InviteStatus status; // pending | accepted | declined | canceled | revoked | expired (we map to 3)
+  final DateTime sentAt;
   final String? acceptedBy; // userId
   final DateTime? acceptedAt;
 
@@ -25,13 +25,13 @@ class InviteModel {
     return InviteModel(
       token: token,
       accountId: map['accountId'] ?? '',
-      invitedEmail: map['invitedEmail'] ?? '',
-      invitedByUserId: map['invitedByUserId'] ?? '',
+      sentBy: map['sentBy'] ?? map['invitedByUserId'] ?? '',
+      sentToEmail: map['sentToEmail'] ?? map['invitedEmail'] ?? '',
       status: InviteStatus.values.firstWhere(
         (e) => e.name == map['status'],
         orElse: () => InviteStatus.pending,
       ),
-      createdAt: map['createdAt']?.toDate() ?? DateTime.now(),
+      sentAt: (map['sentAt'] ?? map['createdAt'])?.toDate() ?? DateTime.now(),
       acceptedBy: map['acceptedBy'],
       acceptedAt: map['acceptedAt']?.toDate(),
     );
@@ -40,10 +40,10 @@ class InviteModel {
   Map<String, dynamic> toMap() {
     return {
       'accountId': accountId,
-      'invitedEmail': invitedEmail,
-      'invitedByUserId': invitedByUserId,
+      'sentBy': sentBy,
+      'sentToEmail': sentToEmail,
       'status': status.name,
-      'createdAt': createdAt,
+      'sentAt': sentAt,
       'acceptedBy': acceptedBy,
       'acceptedAt': acceptedAt,
     };

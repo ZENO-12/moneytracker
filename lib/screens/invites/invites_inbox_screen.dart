@@ -18,7 +18,7 @@ class InvitesInboxScreen extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection(InviteService.invitationsCollection)
-            .where('invitedEmail', isEqualTo: user.email?.toLowerCase())
+            .where('sentToEmail', isEqualTo: user.email?.toLowerCase())
             .where('status', isEqualTo: InviteStatus.pending.name)
             .snapshots(),
         builder: (context, snapshot) {
@@ -42,7 +42,7 @@ class InvitesInboxScreen extends StatelessWidget {
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: ListTile(
                   title: Text('Invitation to account: ${inv.accountId}'),
-                  subtitle: Text('Invited by: ${inv.invitedByUserId}'),
+                  subtitle: Text('Invited by: ${inv.sentBy}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
