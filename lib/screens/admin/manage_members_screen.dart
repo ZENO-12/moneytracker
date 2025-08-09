@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/firestore_service.dart';
 import '../../services/invite_service.dart';
 import '../../services/auth_service.dart';
@@ -107,16 +108,16 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
           children: [
             Text('Current Members', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
-            ...widget.account.members.map((userId) => ListTile(
+            ...widget.account.members.map((m) => ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(userId),
-              subtitle: Text(userId == widget.account.createdBy ? 'Admin' : 'Member'),
-              trailing: userId == widget.account.createdBy
+              title: Text(m.userId),
+              subtitle: Text(m.role == 'admin' ? 'Admin' : 'Member'),
+              trailing: m.userId == widget.account.createdBy
                   ? null
                   : IconButton(
                       icon: const Icon(Icons.remove_circle_outline),
                       onPressed: () async {
-                        await _firestoreService.removeMemberFromAccount(widget.account.id, userId);
+                        await _firestoreService.removeMemberFromAccount(widget.account.id, m.userId);
                         if (mounted) setState(() {});
                       },
                     ),
@@ -128,7 +129,7 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
   }
 
   Widget _buildInvitesSection() {
-    return StreamBuilder<QuerySnapshot>(
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance
           .collection('invites')
           .where('accountId', isEqualTo: widget.account.id)
@@ -151,7 +152,7 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
                     final invite = InviteModel.fromMap(d.data() as Map<String, dynamic>, d.id);
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text(invite.invitedEmail),
+                      title: Text(invite.sentToEmail),
                       subtitle: const Text('Pending'),
                       trailing: TextButton(
                         onPressed: () async {

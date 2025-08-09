@@ -112,7 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Profile header
-            _buildProfileHeader(currentUser.email),
+            _buildProfileHeader(currentUser.email ?? ''),
             const SizedBox(height: 24),
 
             // Edit profile section
@@ -336,7 +336,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _buildStatCard(
                       'This Week',
                       _currencyFormat.format(stats['weeklyAmount']),
-                      Icons.calendar_week,
+                      Icons.calendar_view_week, 
                     ),
                     _buildStatCard(
                       'Count',

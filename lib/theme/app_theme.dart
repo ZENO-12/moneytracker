@@ -31,16 +31,14 @@ class AppTheme {
         primary: primary,
         secondary: secondary,
         surface: surface,
-        background: background,
         error: error,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: textPrimary,
-        onBackground: textPrimary,
         onError: Colors.white,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: background,
+        backgroundColor: surface,
         foregroundColor: textPrimary,
         elevation: 0,
         centerTitle: true,
@@ -98,12 +96,12 @@ class AppTheme {
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
-      cardTheme: CardTheme(
+      cardTheme: const CardThemeData(
         color: surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: grey200),
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          side: BorderSide(color: grey200),
         ),
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(

@@ -270,7 +270,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildContributionChart(List<DepositModel> deposits, List<String> members) {
+  Widget _buildContributionChart(List<DepositModel> deposits, List<AccountMember> members) {
     if (deposits.isEmpty) {
       return Card(
         child: Padding(
